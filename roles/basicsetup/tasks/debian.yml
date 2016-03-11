@@ -4,11 +4,12 @@
     state: present
     update_cache: no
   with_items: apt_repos
+  register: defaultrepos_result
   when: ansible_distribution=="Debian"
 
 - name: upgrade package cache
   apt: update_cache=yes
-  when: ansible_distribution=="Debian"
+  when: ansible_distribution=="Debian" and defaultrepos_result.changed
 
 - name: install vim, screen, less, acpi, psmisc
   apt: pkg={{ item }} state=present
