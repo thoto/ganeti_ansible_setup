@@ -1,0 +1,7 @@
+- include: public.yml
+  when: "ganeti_tags.attrib.net_policy is defined and 'public' in ganeti_tags.attrib.net_policy"
+
+- include: autoupdate.yml
+  when: "'autoupdate' in ganeti_tags.simple"
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

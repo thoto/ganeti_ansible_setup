@@ -1,0 +1,13 @@
+;
+; BIND data file for {{ ansible_domain }}
+;
+$TTL    604800 ; 1 week
+@       IN      SOA     {{ dns.master }}. root.{{ dns.mail }}. (
+                              1         ; Serial
+                           3600         ; Refresh
+                           7200         ; Retry
+                        2419200         ; Expire
+                          86400 )       ; Negative Cache TTL
+;
+@       IN      NS      {{ dns.master }}.
+$TTL    18000 ; 1 hour

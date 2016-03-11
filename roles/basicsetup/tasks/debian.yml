@@ -1,0 +1,37 @@
+- name: install default repos
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: no
+  with_items: apt_repos
+  when: ansible_distribution=="Debian"
+
+- name: upgrade package cache
+  apt: update_cache=yes
+  when: ansible_distribution=="Debian"
+
+- name: install vim, screen, less, acpi, psmisc
+  apt: pkg={{ item }} state=present
+  with_items: [ "vim", "screen", "less", "acpi-support-base", "psmisc" ]
+  when: ansible_distribution=="Debian"
+
+- name: install molly-guard, tcpdump, netcat, htop
+  apt: pkg={{ item }} state=present
+  with_items: [ "molly-guard", "tcpdump", "netcat", "htop"]
+  when: ansible_distribution=="Debian"
+
+- name: install iptables-persistent, links, wget, curl
+  apt: pkg={{ item }} state=present
+  with_items: [ "iptables-persistent", "links", "wget", "curl" ]
+  when: ansible_distribution=="Debian"
+
+- name: determine init daemon
+  shell: dpkg-query -W -f='${db:Status-Status}' sysvinit-core
+  ignore_errors: True
+  register: sysvinit_status
+  changed_when: false
+  when: ansible_distribution=="Debian"
+
+- include: interfaces.yml
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

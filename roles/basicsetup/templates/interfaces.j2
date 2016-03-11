@@ -1,0 +1,23 @@
+auto lo
+iface lo inet loopback
+
+{% for i in ganeti_net %}
+auto eth{{ i.if }}
+{% if i.ipv4 is defined %}
+iface eth{{ i.if }} inet static
+	address {{ i.ipv4 | ipaddr('address') }}
+	netmask {{ i.nw | ipaddr('netmask') }}
+	broadcast {{ i.nw | ipaddr('broadcast') }}
+	gateway {{ i.gw }}
+{% else %}
+iface eth{{ i.if }} inet manual
+{% endif%}
+
+# {% if i.gw6 is defined %}
+# iface eth{{ i.if }} inet6 static
+# {% else %}
+# iface eth{{ i.if }} inet6 manual
+# {% endif %}
+iface eth{{ i.if }} inet6 manual
+
+{% endfor %}

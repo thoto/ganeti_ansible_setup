@@ -1,0 +1,22 @@
+- include: debian.yml
+
+# the following does not work because it requires dbus to be run
+#- name: force ttyS0 tty in systemd enabled
+#  service: name=serial-getty@ttyS0.service enabled=yes
+#  when: sysvinit_status.stdout!="installed"
+
+- name: force ttyS0 tty in sysvinit enabled
+  lineinfile:
+    dest: /etc/inittab
+    create: no
+    state: present
+    line: "S0:2345:respawn:/sbin/getty -L ttyS0 38400 vt100"
+    regexp: "^[^#]*ttyS0"
+  notify: reload sysvinit
+  when: sysvinit_status.stdout=="installed"
+
+- name: set VIM default editor
+  alternatives: name='editor' path='/usr/bin/vim'
+
+- include: openssh.yml
+# vim:ff=unix ts=2 sw=2 ai expandtab

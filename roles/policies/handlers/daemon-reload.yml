@@ -1,0 +1,4 @@
+- name: reload ssh
+  service: name=ssh state=reloaded
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

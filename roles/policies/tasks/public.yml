@@ -1,0 +1,20 @@
+- name: install fail2ban, iptables-persistent
+  apt: pkg={{ item }} state=present
+  with_items: [ "fail2ban", "iptables-persistent" ]
+  when: ansible_distribution=="Debian"
+
+- name: disable SSH root login with using password
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin without-password$"
+    line: "PermitRootLogin without-password"
+  notify: reload ssh
+
+- name: disable empty SSH passwords
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitEmptyPasswords no$"
+    line: "PermitEmptyPasswords no"
+  notify: reload ssh
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

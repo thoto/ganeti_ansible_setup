@@ -1,0 +1,11 @@
+- name: APT install openssh
+  apt: pkg=openssh-server state=latest
+  when: ansible_distribution=='Debian'
+
+- name: install ssh keys
+  authorized_key:
+    user: root
+    key: "{{ item }}"
+  with_items: sshkeys
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

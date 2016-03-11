@@ -1,0 +1,7 @@
+- name: install aptitude
+  apt: name=aptitude state=present install_recommends=no
+
+- name: update all packages
+  apt: update_cache=yes upgrade=safe
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

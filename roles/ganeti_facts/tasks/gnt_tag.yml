@@ -1,0 +1,9 @@
+---
+- name: "populate list of tags"
+  local_action:
+    module: gnt_tag_info
+    rapi: "{{ganeti.rapi}}"
+    type: "instance"
+    name: "{{inventory_hostname}}"
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

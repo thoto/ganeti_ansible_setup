@@ -1,0 +1,18 @@
+sshkeys: # list of SSH keys to include
+  - "ssh-rsa ... ansible@..."
+dns:
+  master: "dnsmaster.example.net" # DNS Master Server for SOA
+  mail: "mailme.example.net" # DNS contact
+
+apt_repos:
+  - "deb http://SOMEMIRROR/debian SUITE main contrib non-free"
+  - "deb-src http://SOMEMIRROR/debian SUITE main contrib non-free"
+  - "deb http://SOMEMIRROR/debian SUITE-updates main contrib non-free"
+  - "deb-src http://SOMEMIRROR/debian SUITE-updates main contrib non-free"
+  - "deb http://security.debian.org/ SUITE/updates main contrib non-free"
+  - "deb-src http://security.debian.org/ SUITE/updates main contrib non-free"
+
+ganeti:
+  rapi: { host: "127.0.0.1", port: 5080, user: "username", pass: "password"}
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

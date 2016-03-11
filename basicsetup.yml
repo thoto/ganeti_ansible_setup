@@ -1,0 +1,10 @@
+---
+- hosts: all
+  vars_files:
+    - basicsetup-vars.yml
+  roles:
+    - { role: ganeti_chrootsetup, when: "configure_by_env is defined and configure_by_env=='true'" }
+    - ganeti_facts
+    - basicsetup
+#    - { role: policies, when: "ganeti_tags.simple.nopolicy is not defined" }
+# vim:ff=unix ts=2 sw=2 ai expandtab

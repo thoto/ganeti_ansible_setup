@@ -1,0 +1,8 @@
+---
+# TODO: handle non-FQDN instance names
+- name: set hostname
+  set_fact:
+    inventory_hostname: "{{ lookup('env','INSTANCE_NAME') }}"
+    ansible_fqdn: "{{ lookup('env','INSTANCE_NAME') }}"
+    ansible_hostname: "{% set foo = lookup('env','INSTANCE_NAME').split('.',1) %}{{foo[0] }}"
+    ansible_domain: "{% set foo = lookup('env','INSTANCE_NAME').split('.',1) %}{{foo[1] }}"

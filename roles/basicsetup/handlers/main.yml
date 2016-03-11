@@ -1,0 +1,11 @@
+---
+- name: reload sysvinit
+  command: telinit q
+
+- name: reload local bind9
+  local_action:
+    module: service
+    name: bind9
+    state: reloaded
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

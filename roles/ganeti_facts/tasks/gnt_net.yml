@@ -1,0 +1,8 @@
+---
+- name: "populate list of interfaces"
+  local_action:
+    module: gnt_net_info
+    rapi: "{{ganeti.rapi}}"
+    instance: "{{inventory_hostname}}"
+
+# vim:ff=unix ts=2 sw=2 ai expandtab

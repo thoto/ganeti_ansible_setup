@@ -1,0 +1,3 @@
+[submodule "roles/ganeti_facts/library"]
+	path = roles/ganeti_facts/library
+	url = https://github.com/thoto/ganeti_ansible_facts
