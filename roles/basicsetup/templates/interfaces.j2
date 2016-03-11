@@ -13,11 +13,13 @@ iface eth{{ i.if }} inet static
 iface eth{{ i.if }} inet manual
 {% endif%}
 
-# {% if i.gw6 is defined %}
-# iface eth{{ i.if }} inet6 static
-# {% else %}
-# iface eth{{ i.if }} inet6 manual
-# {% endif %}
+{% if i.nw6 is defined %}
+iface eth{{ i.if }} inet6 static
+	address {{i.nw6|slaacbymac(i.mac)}}
+	netmask {{i.nw6|ipaddr('prefix')}}
+	gateway {{i.gw6}}
+{% else %}
 iface eth{{ i.if }} inet6 manual
+{% endif %}
 
 {% endfor %}

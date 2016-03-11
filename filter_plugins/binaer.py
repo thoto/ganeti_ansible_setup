@@ -1,3 +1,5 @@
+import netaddr # for mac -> ipv6
+
 def digit_to_char(digit):
     if digit < 10:
         return str(digit)
@@ -57,6 +59,26 @@ def revzone(value):
     else:
         return False
 
+def slaacbymac(value,mac):
+    if map(lambda x: int(x),netaddr.__version__.split('.'))>[0,7,12]:
+        return netaddr.EUI(mac).ipv6(value) # netaddr version 0.7.13 and above
+    else:
+        return netaddr.IPAddress(int(netaddr.IPNetwork(value).network) + int(netaddr.EUI(mac).eui64())^0x00000000000000000200000000000000)
+
+def contextfilter(f):
+    """Decorator for marking context dependent filters. The current
+    :class:`Context` will be passed as first argument.
+    """
+    f.contextfilter = True
+    return f
+
+@contextfilter
+def mumap(context,seq,mapfun,attr1,attr2,kwargs={}):
+    res=map(lambda x: context.environment.call_filter(mapfun, x[attr1],
+        [x[attr2]], kwargs,context=context), seq)
+    for i in res:
+        yield i
+
 class FilterModule(object):
     '''reverse zone and binary operations'''
     def filters(self):
@@ -64,5 +86,7 @@ class FilterModule(object):
             'band': band,
             'bor': bor,
             'revzone': revzone,
+            'slaacbymac': slaacbymac,
+            'mumap': mumap,
         }
 # vim:ff=unix ts=4 sw=4 ai expandtab

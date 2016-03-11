@@ -1,15 +1,15 @@
 ---
 - name: "Update /etc/network/interfaces"
-  when: ganeti_net is defined
+  when: ganeti_net is defined and ansible_distribution=="Debian"
   template:
     dest: /etc/network/interfaces
     backup: yes
     force: yes
     src: interfaces.j2
 
-# FIXME: not just first interface
 - name: "Create forward zonefiles"
-  when: ganeti_net is defined and ganeti_net[0].ipv4 is defined
+  when: ganeti_net is defined and
+        ganeti_net|selectattr('ipv4','defined')|list|length>0
   local_action:
     module: template
     src: zonefile-forward.j2
@@ -18,9 +18,9 @@
     force: no
   notify: reload local bind9
 
-# FIXME: not just first interface
-- name: "remove old dns entries from forward lookup zonefile (FQ)"
-  when: ganeti_net is defined and ganeti_net[0].ipv4 is defined
+- name: "remove old dns entries from forward lookup zonefile (FQ / A)"
+  when: ganeti_net is defined and
+        ganeti_net|selectattr('ipv4','defined')|list|length>0
   local_action:
     module: lineinfile
     dest: "/etc/bind/db.{{ ansible_domain }}"
@@ -29,9 +29,9 @@
     validate: "named-checkzone {{ansible_domain}} %s"
   notify: reload local bind9
 
-# FIXME: not just first interface
-- name: "remove old dns entries from forward lookup zonefile (host)"
-  when: ganeti_net is defined and ganeti_net[0].ipv4 is defined
+- name: "remove old dns entries from forward lookup zonefile (host / A)"
+  when: ganeti_net is defined and
+        ganeti_net|selectattr('ipv4','defined')|list|length>0
   local_action:
     module: lineinfile
     dest: "/etc/bind/db.{{ ansible_domain }}"
@@ -40,7 +40,7 @@
     validate: "named-checkzone {{ansible_domain}} %s"
   notify: reload local bind9
 
-- name: "Add forward lookup to hostname"
+- name: "Add forward lookup A record to hostname"
   when: ganeti_net is defined and item.ipv4 is defined
   local_action:
     module: lineinfile
@@ -50,7 +50,39 @@
   with_items: ganeti_net
   notify: reload local bind9
 
-- name: "Create reverse zonefiles"
+- name: "remove old dns entries from forward lookup zonefile (FQ / AAAA)"
+  when: ganeti_net is defined and
+        ganeti_net|selectattr('nw6','defined')|list|length>0
+  local_action:
+    module: lineinfile
+    dest: "/etc/bind/db.{{ ansible_domain }}"
+    regexp: "^{{ ansible_fqdn }}.[ \t0-9]+IN[ \t]+A[ \t]+(?!{{ganeti_net|selectattr('nw6','defined')|mumap('slaacbymac','nw6','mac')|join('\n|')}}\n)"
+    state: absent
+    validate: "named-checkzone {{ansible_domain}} %s"
+  notify: reload local bind9
+
+- name: "remove old dns entries from forward lookup zonefile (host / AAAA)"
+  when: ganeti_net is defined and
+        ganeti_net|selectattr('nw6','defined')|list|length>0
+  local_action:
+    module: lineinfile
+    dest: "/etc/bind/db.{{ ansible_domain }}"
+    regexp: "^{{ ansible_hostname }}[ \t0-9]+IN[ \t]+AAAA[ \t]+(?!{{ganeti_net|selectattr('nw6','defined')|mumap('slaacbymac','nw6','mac')|join('\n|')}}\n)"
+    state: absent
+    validate: "named-checkzone {{ansible_domain}} %s"
+  notify: reload local bind9
+
+- name: "Add forward lookup AAAA record to hostname"
+  when: ganeti_net is defined and item.nw6 is defined
+  local_action:
+    module: lineinfile
+    dest: "/etc/bind/db.{{ ansible_domain }}"
+    line: "{{ansible_hostname}}	18000	IN	AAAA	{{ item.nw6|slaacbymac(item.mac) }}"
+    validate: "named-checkzone {{ansible_domain}} %s"
+  with_items: ganeti_net
+  notify: reload local bind9
+
+- name: "Create IPv4 reverse zonefiles"
   when: ganeti_net is defined and item.nw is defined
   local_action:
     module: template
@@ -60,7 +92,7 @@
   with_items: ganeti_net
   notify: reload local bind9
 
-- name: "Add reverse lookup to hostname"
+- name: "Add IPv4 reverse lookup to hostname"
   when: ganeti_net is defined and item.nw is defined
   local_action:
     module: lineinfile
@@ -70,6 +102,25 @@
   with_items: ganeti_net
   notify: reload local bind9
 
+- name: "Create IPv6 reverse zonefiles"
+  when: ganeti_net is defined and item.nw6 is defined
+  local_action:
+    module: template
+    src: zonefile-reverse-v6.j2
+    dest: "/etc/bind/db.{{ item.nw6 | revzone }}"
+    force: no
+  with_items: ganeti_net
+  notify: reload local bind9
+
+- name: "Add IPv6 reverse lookup to hostname"
+  when: ganeti_net is defined and item.nw6 is defined
+  local_action:
+    module: lineinfile
+    dest: /etc/bind/db.{{item.nw6 | revzone }}
+    regexp: "^{{item.nw6 | slaacbymac(item.mac) | ipaddr('revdns') }}"
+    line: "{{item.nw6 | slaacbymac(item.mac) | ipaddr('revdns') }}	18000	IN	PTR	{{ ansible_fqdn }}."
+  with_items: ganeti_net
+  notify: reload local bind9
 
 - name: "flush handlers"
   meta: flush_handlers
